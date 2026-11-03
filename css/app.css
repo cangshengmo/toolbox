@@ -477,3 +477,39 @@ textarea.input {
   background: transparent;
   cursor: default;
 }
+
+/* ---------- 个性化:主题色与置顶 ---------- */
+.accent-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.accent-dot {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.accent-dot.active {
+  border-color: var(--text);
+  box-shadow: 0 0 0 2px var(--surface) inset;
+}
+
+.tool-card {
+  position: relative;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.pin-badge {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: 13px;
+  color: var(--accent);
+}
