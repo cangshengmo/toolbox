@@ -23,6 +23,20 @@ App.registerTool({
         <div class="muted" style="font-size:12.5px;margin-bottom:8px">常买(点一下加回清单)</div>
         <div id="spFreq" style="display:flex;flex-wrap:wrap;gap:8px"></div>
       </div>
+      <div class="card">
+        <div class="row" style="margin-bottom:8px">
+          <span class="item-title" style="font-size:14px">👨‍👩‍👧 家庭共享(离线)</span>
+        </div>
+        <div class="row" style="margin-bottom:0">
+          <button id="spShare" class="btn btn-primary grow" style="min-height:42px">📤 分享清单给家人</button>
+          <button id="spImportBtn" class="btn grow" style="min-height:42px">📥 导入家人清单</button>
+        </div>
+        <div id="spImportBox" hidden style="margin-top:10px">
+          <textarea id="spImportText" class="input" style="min-height:80px;font-size:13px" placeholder="粘贴家人分享的清单文本"></textarea>
+          <button id="spImportGo" class="btn btn-primary" style="width:100%;min-height:40px;margin-top:6px">合并进我的清单</button>
+        </div>
+        <div class="muted" style="font-size:11.5px;margin-top:6px">无后端方案:文本互通,各存各的;待购项前标 ▢,已购标 ☑</div>
+      </div>
       <div class="list" id="spList" style="margin-top:12px"></div>
       <div class="empty" id="spEmpty" hidden>清单是空的，添加第一件吧</div>
       <div class="row" id="spFooter" hidden style="margin-top:12px">
@@ -152,6 +166,45 @@ App.registerTool({
       save();
       renderAll();
       App.toast('已归入常买,下次一键加回');
+    });
+
+    /* ---------- 家庭共享(离线文本互通,#55) ---------- */
+    function listText() {
+      const lines = items.map(function (it) {
+        return (it.done ? '☑ ' : '▢ ') + it.name;
+      });
+      return '🛒 百宝箱购物清单\n' + (lines.length ? lines.join('\n') : '(空)');
+    }
+
+    el.querySelector('#spShare').addEventListener('click', function () {
+      const text = listText();
+      if (navigator.share) {
+        navigator.share({ title: '购物清单', text: text }).catch(function () { /* 用户取消 */ });
+      } else {
+        navigator.clipboard.writeText(text).then(function () { App.toast('已复制清单文本,发给家人吧'); }, function () { App.toast('复制失败'); });
+      }
+    });
+
+    el.querySelector('#spImportBtn').addEventListener('click', function () {
+      const box = el.querySelector('#spImportBox');
+      box.hidden = !box.hidden;
+    });
+
+    el.querySelector('#spImportGo').addEventListener('click', function () {
+      const raw = el.querySelector('#spImportText').value;
+      let added = 0;
+      raw.split('\n').forEach(function (line) {
+        const name = line.replace(/^[▢☑✓✗\-\s]+/, '').trim();
+        if (!name) return;
+        const dup = items.some(function (it) { return it.name === name; });
+        if (dup) return;
+        items.unshift({ id: App.uid(), name: name, done: false });
+        added++;
+      });
+      save();
+      renderAll();
+      el.querySelector('#spImportText').value = '';
+      App.toast(added ? '已合并 ' + added + ' 项' : '没有新东西可合并');
     });
 
     renderAll();

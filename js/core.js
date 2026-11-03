@@ -377,5 +377,23 @@ App.boot = function () {
     applyTheme();
     App.applyAccent();
   });
+  /* 系统分享目标:接收共享文本,存进便签(#53) */
+  (function () {
+    try {
+      const q = new URLSearchParams(location.search);
+      const shared = q.get('text') || q.get('title') || q.get('url');
+      if (!shared) return;
+      const notes = App.store.get('notes', 'notes', []);
+      if (!Array.isArray(notes)) return;
+      notes.unshift({ id: App.uid(), text: String(shared).slice(0, 2000), color: '#9AD0F0', updated: Date.now() });
+      App.store.set('notes', 'notes', notes);
+      q.delete('title');
+      q.delete('text');
+      q.delete('url');
+      const qs = q.toString();
+      history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+      setTimeout(function () { App.toast('已把分享的内容存进便签'); }, 800);
+    } catch (e) { /* 非分享启动,忽略 */ }
+  })();
   route();
 };
