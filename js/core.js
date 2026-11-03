@@ -221,6 +221,13 @@ function renderHome(page) {
           return `<button class="accent-dot${c === cur ? ' active' : ''}" data-c="${c}" style="background:${c}" aria-label="主题色 ${c}"></button>`;
         }).join('')}
       </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
+        <span class="muted" style="font-size:12.5px">图标风格</span>
+        ${['thin', 'normal', 'bold'].map(function (s) {
+          const curStyle = App.store.appGet('iconstyle', 'normal');
+          return '<button class="chip' + (curStyle === s ? ' active' : '') + '" data-istyle="' + s + '" style="min-height:32px;font-size:12.5px">' + (s === 'thin' ? '细' : s === 'bold' ? '粗' : '标准') + '</button>';
+        }).join('')}
+      </div>
     </div>`;
 
   /* 长按(500ms)/右键切换置顶 */
@@ -288,6 +295,12 @@ function renderHome(page) {
     const dot = e.target.closest('.accent-dot');
     if (dot) {
       App.setAccent(dot.dataset.c);
+      renderHome(page);
+      return;
+    }
+    const istyle = e.target.closest('button[data-istyle]');
+    if (istyle) {
+      App.store.appSet('iconstyle', istyle.dataset.istyle);
       renderHome(page);
     }
   });

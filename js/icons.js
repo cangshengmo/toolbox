@@ -72,7 +72,12 @@ App.ICONS['contact'] = '<path d="M16 2v2" /><path d="M7 22v-2a2 2 0 0 1 2-2h6a2 
 
 App.icon = function (name) {
   if (App.ICONS[name]) {
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + App.ICONS[name] + '</svg>';
+    let width = 2;
+    try {
+      const style = App.store && typeof App.store.appGet === 'function' ? App.store.appGet('iconstyle', 'normal') : 'normal';
+      width = style === 'thin' ? 1.5 : style === 'bold' ? 2.5 : 2;
+    } catch (e) { width = 2; }
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + width + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + App.ICONS[name] + '</svg>';
   }
   return null;
 };

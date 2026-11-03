@@ -29,6 +29,11 @@ App.registerTool({
           <button id="pmToggle" class="btn btn-primary" style="min-height:44px;min-width:96px">开始</button>
           <button id="pmReset" class="btn" style="min-height:44px">重置</button>
         </div>
+        <div class="row" style="justify-content:center;margin-bottom:0" id="pmNoise">
+          <button class="btn" data-noise="off" style="min-height:40px;font-size:13.5px">🔇 无声</button>
+          <button class="btn" data-noise="white" style="min-height:40px;font-size:13.5px">🌫 白噪音</button>
+          <button class="btn" data-noise="rain" style="min-height:40px;font-size:13.5px">🌧 雨声</button>
+        </div>
       </div>
       <div class="card">
         <div class="row">
@@ -208,13 +213,76 @@ App.registerTool({
       if (!timer) { pausedMs = null; paint(); }
     });
 
+    /* ---------- 白噪音/雨声(Web Audio 合成,离线可用) ---------- */
+    let audioCtx = null;
+    let noiseSrc = null;
+    let noiseMode = 'off';
+
+    function paintNoise() {
+      el.querySelectorAll('#pmNoise button').forEach(function (b) {
+        const on = b.dataset.noise === noiseMode;
+        b.style.background = on ? 'var(--accent)' : '';
+        b.style.borderColor = on ? 'transparent' : '';
+        b.style.color = on ? '#fff' : '';
+      });
+    }
+
+    function stopNoise() {
+      if (noiseSrc) {
+        try { noiseSrc.stop(); } catch (e) { /* already stopped */ }
+        noiseSrc = null;
+      }
+    }
+
+    function playNoise(kind) {
+      stopNoise();
+      noiseMode = kind;
+      if (kind === 'off') { paintNoise(); return; }
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const len = 2 * audioCtx.sampleRate;
+        const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+        noiseSrc = audioCtx.createBufferSource();
+        noiseSrc.buffer = buf;
+        noiseSrc.loop = true;
+        const gain = audioCtx.createGain();
+        if (kind === 'rain') {
+          const f = audioCtx.createBiquadFilter();
+          f.type = 'lowpass';
+          f.frequency.value = 900;
+          noiseSrc.connect(f);
+          f.connect(gain);
+        } else {
+          noiseSrc.connect(gain);
+        }
+        gain.gain.value = kind === 'rain' ? 0.25 : 0.08;
+        gain.connect(audioCtx.destination);
+        noiseSrc.start();
+      } catch (e) {
+        App.toast('当前环境不支持音频');
+        noiseMode = 'off';
+      }
+      paintNoise();
+    }
+
+    el.querySelector('#pmNoise').addEventListener('click', function (e) {
+      const b = e.target.closest ? e.target.closest('button[data-noise]') : null;
+      if (!b) return;
+      playNoise(b.dataset.noise);
+    });
+
     paint();
     updateStats();
+    paintNoise();
 
-    /* 路由离开时清理定时器 */
+    /* 路由离开时清理定时器与音频 */
     return function cleanup() {
       if (timer) clearInterval(timer);
       timer = null;
+      stopNoise();
     };
   },
 });
