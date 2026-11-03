@@ -34,6 +34,8 @@ App.ICONS['globe'] = '<circle cx="12" cy="12" r="10" /><path d="M12 2a14.5 14.5 
 App.ICONS['grid-2x2'] = '<path d="M12 3v18" /><path d="M3 12h18" /><rect x="3" y="3" width="18" height="18" rx="2" />';
 App.ICONS['languages'] = '<path d="m5 8 6 6" /><path d="m4 14 6-6 2-3" /><path d="M2 5h12" /><path d="M7 2h1" /><path d="m22 22-5-10-5 10" /><path d="M14 18h6" />';
 
+App.ICONS['languages'] = '<path d="m5 8 6 6" /><path d="m4 14 6-6 2-3" /><path d="M2 5h12" /><path d="M7 2h1" /><path d="m22 22-5-10-5 10" /><path d="M14 18h6" />';
+
 App.icon = function (name) {
   if (App.ICONS[name]) {
     return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + App.ICONS[name] + '</svg>';
