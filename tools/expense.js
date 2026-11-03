@@ -25,7 +25,7 @@
   App.registerTool({
     id: 'expense',
     name: '记账本',
-    icon: '💰',
+    icon: 'wallet',
     desc: '轻量支出记录',
     order: 80,
 

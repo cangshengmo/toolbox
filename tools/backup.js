@@ -5,7 +5,7 @@
   App.registerTool({
     id: 'backup',
     name: '数据备份',
-    icon: '💾',
+    icon: 'database-backup',
     desc: '导出/导入全部数据',
     order: 90,
 

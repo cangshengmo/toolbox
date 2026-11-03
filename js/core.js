@@ -88,12 +88,12 @@ function renderHeader(back, icon, title) {
   const left = back
     ? '<button id="backBtn" class="icon-btn" aria-label="返回">←</button>'
     : '<a href="#/" class="brand" aria-label="首页">🧰</a>';
-  const tbtn = App.THEME_LABELS[App.theme()] || '🌓';
+  const ticon = ({ auto: 'sun-moon', light: 'sun', dark: 'moon' })[App.theme()] || 'sun-moon';
   h.innerHTML = `
     <div class="header-inner">
       ${left}
-      <div class="header-title">${App.esc(icon)} ${App.esc(title)}</div>
-      <button id="themeBtn" class="icon-btn" aria-label="切换主题">${tbtn}</button>
+      <div class="header-title">${(App.icon && App.icon(icon)) || App.esc(icon)} ${App.esc(title)}</div>
+      <button id="themeBtn" class="icon-btn" aria-label="切换主题">${App.icon(ticon)}</button>
     </div>`;
   const bb = h.querySelector('#backBtn');
   if (bb) bb.addEventListener('click', () => history.back());
@@ -101,7 +101,7 @@ function renderHeader(back, icon, title) {
     const i = App.THEMES.indexOf(App.theme());
     const next = App.THEMES[(i + 1) % App.THEMES.length];
     App['setTheme'](next);
-    document.getElementById('themeBtn').textContent = App.THEME_LABELS[next];
+    document.getElementById('themeBtn').innerHTML = App.icon(({ auto: 'sun-moon', light: 'sun', dark: 'moon' })[next]);
   });
 }
 
@@ -122,6 +122,8 @@ function route() {
     renderHeader(false, '🧰', '百宝箱');
     renderHome(page);
   }
+  page.classList.add('bx-enter');
+  setTimeout(() => page.classList.remove('bx-enter'), 750);
 }
 
 function renderNotFound() {
@@ -138,7 +140,7 @@ function renderHome(page) {
     <div class="tool-grid">
       ${App.tools.map(t => `
         <a class="tool-card" href="#/t/${App.esc(t.id)}">
-          <div class="tool-icon">${App.esc(t.icon)}</div>
+          <div class="tool-icon">${(App.icon && App.icon(t.icon)) || App.esc(t.icon)}</div>
           <div class="tool-name">${App.esc(t.name)}</div>
           <div class="tool-desc">${App.esc(t.desc || '')}</div>
         </a>`).join('')}

@@ -1,6 +1,6 @@
 /* 倒计时器 */
 App.registerTool({
-  id: 'timer', name: '倒计时', icon: '⏰', desc: '快速倒计时提醒', order: 50,
+  id: 'timer', name: '倒计时', icon: 'alarm-clock', desc: '快速倒计时提醒', order: 50,
   render(el) {
     const PRESETS = [1, 3, 5, 10, 15, 30, 60];
     let totalMs = 5 * 60 * 1000;

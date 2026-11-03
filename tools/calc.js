@@ -92,7 +92,7 @@ function bxConvert(cat, from, to, v) {
 }
 
 App.registerTool({
-  id: 'calc', name: '计算器', icon: '🧮', desc: '计算+单位换算', order: 40,
+  id: 'calc', name: '计算器', icon: 'calculator', desc: '计算+单位换算', order: 40,
   render(el) {
     let view = 'calc';
     el.innerHTML = `

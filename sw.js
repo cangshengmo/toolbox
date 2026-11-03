@@ -2,12 +2,13 @@
    经典脚本（非 module）：预缓存全部资源，cache-first 离线策略。
    更新资源后请把 CACHE 版本号 +1，旧缓存会在 activate 阶段清除。 */
 
-const CACHE = 'bx-cache-v1';
+const CACHE = 'bx-cache-v2';
 
 const ASSETS = [
   './',
   './index.html',
   './css/app.css',
+  './js/icons.js',
   './js/store.js',
   './js/core.js',
   './tools/todo.js',

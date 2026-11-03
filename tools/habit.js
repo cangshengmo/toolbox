@@ -2,7 +2,7 @@
 App.registerTool({
   id: 'habit',
   name: '习惯打卡',
-  icon: '🔥',
+  icon: 'flame',
   desc: '每日习惯追踪',
   order: 20,
 

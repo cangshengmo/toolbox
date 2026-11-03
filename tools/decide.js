@@ -1,6 +1,6 @@
 /* 随机决定器：转盘 / 抽签 / 掷硬币 */
 App.registerTool({
-  id: 'decide', name: '随机决定', icon: '🎡', desc: '转盘/抽签/掷硬币', order: 60,
+  id: 'decide', name: '随机决定', icon: 'ferris-wheel', desc: '转盘/抽签/掷硬币', order: 60,
   render(el) {
     el.innerHTML = `
       <div class="seg" id="dSeg">

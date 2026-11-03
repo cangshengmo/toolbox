@@ -2,7 +2,7 @@
 App.registerTool({
   id: 'todo',
   name: '待办清单',
-  icon: '✅',
+  icon: 'square-check-big',
   desc: '简单的任务清单',
   order: 10,
 

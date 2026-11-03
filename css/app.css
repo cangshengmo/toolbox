@@ -366,3 +366,45 @@ textarea.input {
 }
 
 .toast.show { opacity: 1; }
+
+/* ===== v1.1 图标与动效 ===== */
+.tool-icon svg { width: 30px; height: 30px; display: block; color: var(--accent); }
+.header-title svg { width: 21px; height: 21px; display: block; }
+.icon-btn svg { width: 20px; height: 20px; display: block; margin: auto; }
+
+@keyframes bx-fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+.bx-enter > * { animation: bx-fade-up .38s cubic-bezier(.22, 1, .36, 1) backwards; }
+.bx-enter > *:nth-child(2) { animation-delay: 45ms; }
+.bx-enter > *:nth-child(3) { animation-delay: 90ms; }
+.bx-enter > *:nth-child(4) { animation-delay: 135ms; }
+.bx-enter > *:nth-child(5) { animation-delay: 180ms; }
+.bx-enter > *:nth-child(6) { animation-delay: 225ms; }
+.bx-enter > *:nth-child(7) { animation-delay: 270ms; }
+.bx-enter > *:nth-child(8) { animation-delay: 315ms; }
+
+.btn:active, .tool-card:active, .chip:active, .seg-btn:active { transform: scale(.96); }
+.btn, .tool-card, .chip, .seg-btn, .icon-btn {
+  transition: transform .12s cubic-bezier(.22, 1, .36, 1), background-color .15s, border-color .15s, box-shadow .2s;
+}
+
+@keyframes bx-toast-in {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+.toast.show { animation: bx-toast-in .28s cubic-bezier(.22, 1, .36, 1); }
+
+#themeBtn svg { transition: transform .35s cubic-bezier(.22, 1, .36, 1); }
+#themeBtn:active svg { transform: rotate(120deg); }
+
+@media (hover: hover) {
+  .tool-card:hover { transform: translateY(-2px); }
+  .btn:hover { border-color: var(--accent); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

@@ -2,7 +2,7 @@
 App.registerTool({
   id: 'pomodoro',
   name: '番茄钟',
-  icon: '🍅',
+  icon: 'timer',
   desc: '25分钟专注计时',
   order: 30,
 

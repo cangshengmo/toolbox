@@ -26,7 +26,7 @@
   App.registerTool({
     id: 'notes',
     name: '便签',
-    icon: '📝',
+    icon: 'sticky-note',
     desc: '彩色便签记事',
     order: 70,
 
