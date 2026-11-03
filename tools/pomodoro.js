@@ -50,6 +50,11 @@ App.registerTool({
           </select>
         </div>
       </div>
+      <div class="card">
+        <div class="item-title" style="margin-bottom:8px">近 7 天专注</div>
+        <div id="pmWeek" style="display:flex;align-items:flex-end;gap:8px;height:110px"></div>
+        <div class="muted" id="pmWeekSum" style="font-size:12px;margin-top:8px;text-align:center"></div>
+      </div>
       <div class="muted" id="pmStats" style="text-align:center">今日已完成 0 个番茄</div>`;
 
     const timeEl = el.querySelector('#pmTime');
@@ -93,6 +98,34 @@ App.registerTool({
     function updateStats() {
       const stats = App.store.get('pomodoro', 'stats', {}) || {};
       statsEl.textContent = '今日已完成 ' + (stats[App.today()] || 0) + ' 个番茄';
+      renderWeek(stats);
+    }
+
+    /* 近 7 天柱状图:高度按番茄数,分钟数按当前专注时长估算 */
+    function renderWeek(stats) {
+      const weekEl = el.querySelector('#pmWeek');
+      const sumEl = el.querySelector('#pmWeekSum');
+      if (!weekEl) return;
+      const days = [];
+      const names = ['日', '一', '二', '三', '四', '五', '六'];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        days.push({ ds: ds, label: names[d.getDay()], n: stats[ds] || 0 });
+      }
+      const max = Math.max(1, Math.max.apply(null, days.map(function (x) { return x.n; })));
+      weekEl.innerHTML = days.map(function (x) {
+        const h = x.n ? Math.max(8, Math.round(x.n / max * 84)) : 4;
+        const isToday = x.ds === App.today();
+        return '<div style="flex:1;text-align:center">'
+          + '<div style="font-size:11px;color:var(--text-2);margin-bottom:2px">' + (x.n || '') + '</div>'
+          + '<div style="height:' + h + 'px;border-radius:6px 6px 0 0;background:' + (x.n ? 'var(--accent)' : 'color-mix(in srgb, var(--text) 10%, transparent)') + (isToday ? ';outline:2px solid var(--accent);outline-offset:1px' : '') + '"></div>'
+          + '<div style="font-size:11px;color:var(--text-2);margin-top:3px">' + x.label + '</div>'
+          + '</div>';
+      }).join('');
+      const total = days.reduce(function (s, x) { return s + x.n; }, 0);
+      sumEl.textContent = '本周共 ' + total + ' 个番茄 ≈ ' + (total * settings.focus) + ' 分钟(按当前 ' + settings.focus + ' 分钟估算)';
     }
 
     function start() {
