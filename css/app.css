@@ -513,3 +513,26 @@ textarea.input {
   font-size: 13px;
   color: var(--accent);
 }
+
+/* ---------- 2048 ---------- */
+.g2048-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 8px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+  touch-action: none;
+}
+
+.g2048-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  font-weight: 700;
+  font-size: clamp(16px, 5.6vw, 26px);
+  font-variant-numeric: tabular-nums;
+}
