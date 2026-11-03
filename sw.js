@@ -2,7 +2,7 @@
    经典脚本（非 module）：预缓存全部资源，cache-first 离线策略。
    更新资源后请把 CACHE 版本号 +1，旧缓存会在 activate 阶段清除。 */
 
-const CACHE = 'bx-cache-v2';
+const CACHE = 'bx-cache-v3';
 
 const ASSETS = [
   './',
@@ -16,6 +16,7 @@ const ASSETS = [
   './tools/pomodoro.js',
   './tools/calc.js',
   './tools/timer.js',
+  './tools/days.js',
   './tools/decide.js',
   './tools/notes.js',
   './tools/expense.js',

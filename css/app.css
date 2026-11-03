@@ -408,3 +408,72 @@ textarea.input {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ---------- 四象限(待办) ---------- */
+.quad-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.quad-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  margin-bottom: 8px;
+}
+
+.quad-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+}
+
+.quad-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.quad-text.done {
+  text-decoration: line-through;
+  opacity: .45;
+}
+
+/* ---------- 月度热力图(习惯) ---------- */
+.heat-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.heat-cell {
+  aspect-ratio: 1;
+  border: none;
+  padding: 0;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  color: var(--text-2);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.heat-cell.l1 { background: color-mix(in srgb, var(--accent) 25%, transparent); }
+.heat-cell.l2 { background: color-mix(in srgb, var(--accent) 45%, transparent); }
+.heat-cell.l3 { background: color-mix(in srgb, var(--accent) 70%, transparent); }
+.heat-cell.l4 { background: var(--accent); color: #fff; }
+
+.heat-head {
+  background: transparent;
+  cursor: default;
+}

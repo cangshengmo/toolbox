@@ -11,16 +11,26 @@ App.registerTool({
     if (!Array.isArray(list)) list = [];
 
     el.innerHTML = `
-      <div class="row">
-        <input id="todoInput" class="input grow" type="text" placeholder="想做什么？">
-        <button id="todoAdd" class="btn btn-primary" style="min-height:44px">添加</button>
+      <div class="seg" id="todoSeg">
+        <button class="seg-btn" data-v="list">列表</button>
+        <button class="seg-btn" data-v="quad">四象限</button>
       </div>
-      <div class="list" id="todoList" style="margin-top:12px"></div>
-      <div class="empty" id="todoEmpty" hidden>还没有任务，添加一个吧</div>
-      <div class="row" id="todoFooter" style="margin-top:12px">
-        <span class="muted" id="todoLeft"></span>
-        <div class="grow"></div>
-        <button id="todoClear" class="btn btn-danger" style="min-height:44px">清除已完成</button>
+      <div id="todoListWrap">
+        <div class="row">
+          <input id="todoInput" class="input grow" type="text" placeholder="想做什么？">
+          <button id="todoAdd" class="btn btn-primary" style="min-height:44px">添加</button>
+        </div>
+        <div class="list" id="todoList" style="margin-top:12px"></div>
+        <div class="empty" id="todoEmpty" hidden>还没有任务，添加一个吧</div>
+        <div class="row" id="todoFooter" style="margin-top:12px; margin-bottom:0">
+          <span class="muted" id="todoLeft"></span>
+          <div class="grow"></div>
+          <button id="todoClear" class="btn btn-danger" style="min-height:44px">清除已完成</button>
+        </div>
+      </div>
+      <div id="todoQuadWrap" hidden>
+        <div class="quad-grid" id="todoQuad"></div>
+        <div class="muted" style="font-size:12px;margin-top:8px">点文字循环换象限；输入框可直接加进对应象限</div>
       </div>`;
 
     const input = el.querySelector('#todoInput');
@@ -28,6 +38,14 @@ App.registerTool({
     const emptyEl = el.querySelector('#todoEmpty');
     const leftEl = el.querySelector('#todoLeft');
     const clearBtn = el.querySelector('#todoClear');
+    const segEl = el.querySelector('#todoSeg');
+    const listWrap = el.querySelector('#todoListWrap');
+    const quadWrap = el.querySelector('#todoQuadWrap');
+    const quadGrid = el.querySelector('#todoQuad');
+
+    /* 视图状态:列表 / 四象限 */
+    let view = App.store.get('todo', 'view', 'list');
+    if (view !== 'list' && view !== 'quad') view = 'list';
 
     function save() {
       App.store.set('todo', 'list', list);
@@ -111,6 +129,89 @@ App.registerTool({
       renderList();
     });
 
+    /* ---------- 四象限视图 ---------- */
+    const QUAD_NAMES = ['重要且紧急', '重要不紧急', '紧急不重要', '不重要不紧急'];
+
+    function quadTasks(qi) {
+      return list.filter(function (t) { return (t.q || 2) === qi; });
+    }
+
+    function renderQuad() {
+      quadGrid.innerHTML = QUAD_NAMES.map(function (name, i) {
+        const q = i + 1;
+        const items = quadTasks(q);
+        return `
+          <div class="card quad-card">
+            <div class="quad-head"><span>${name}</span><span>${items.length}</span></div>
+            <div>
+              ${items.map(function (t) {
+                return `<div class="quad-item">
+                  <span class="quad-text${t.done ? ' done' : ''}" data-qtask="${App.esc(t.id)}">${App.esc(t.text)}</span>
+                </div>`;
+              }).join('')}
+              ${items.length === 0 ? '<div class="muted" style="font-size:12px;padding:4px 0">空空如也</div>' : ''}
+            </div>
+            <div class="row" style="margin-top:8px; margin-bottom:0">
+              <input class="input grow" style="min-height:38px;font-size:13px" type="text" placeholder="添加到该象限" data-qinput="${q}">
+              <button class="btn btn-primary" style="min-height:38px;font-size:13px" data-qadd="${q}">+</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function applyView() {
+      segEl.querySelectorAll('.seg-btn').forEach(function (b) {
+        b.classList.toggle('active', b.dataset.v === view);
+      });
+      listWrap.hidden = view === 'quad';
+      quadWrap.hidden = view !== 'quad';
+      if (view === 'quad') renderQuad();
+      else renderList();
+    }
+
+    segEl.addEventListener('click', function (e) {
+      const b = e.target.closest ? e.target.closest('.seg-btn') : null;
+      if (!b) return;
+      view = b.dataset.v;
+      App.store.set('todo', 'view', view);
+      applyView();
+    });
+
+    /* 象限内加任务 / 点文字循环换象限 */
+    function addQuadTask(q, inp) {
+      const text = inp.value.trim();
+      if (!text) { App.toast('请输入内容'); return; }
+      list.unshift({ id: App.uid(), text: text, done: false, q: q, created: App.today() });
+      save();
+      renderQuad();
+    }
+
+    quadGrid.addEventListener('click', function (e) {
+      const task = e.target.closest ? e.target.closest('[data-qtask]') : null;
+      if (task) {
+        const t = list.find(function (x) { return x.id === task.dataset.qtask; });
+        if (!t) return;
+        t.q = (t.q || 2) % 4 + 1;
+        save();
+        renderQuad();
+        App.toast('已移到:' + QUAD_NAMES[t.q - 1]);
+        return;
+      }
+      const addBtn = e.target.closest('[data-qadd]');
+      if (addBtn) {
+        const q = +addBtn.dataset.qadd;
+        const inp = quadGrid.querySelector('input[data-qinput="' + q + '"]');
+        addQuadTask(q, inp);
+      }
+    });
+
+    quadGrid.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && e.target.matches('[data-qinput]')) {
+        addQuadTask(+e.target.dataset.qinput, e.target);
+      }
+    });
+
+    applyView();
     renderList();
   },
 });

@@ -19,6 +19,15 @@ App.registerTool({
           <button id="hbAdd" class="btn btn-primary" style="min-height:44px">添加</button>
         </div>
       </div>
+      <div class="card" style="margin-top:0">
+        <div class="row" style="margin-bottom:0; align-items:center">
+          <button class="icon-btn" id="hbHeatPrev" aria-label="上月" style="min-width:40px;min-height:40px">‹</button>
+          <div class="grow" id="hbHeatTitle" style="text-align:center;font-weight:600"></div>
+          <button class="icon-btn" id="hbHeatNext" aria-label="下月" style="min-width:40px;min-height:40px">›</button>
+        </div>
+        <div class="heat-grid" id="hbHeatGrid" style="margin-top:10px"></div>
+        <div class="muted" style="font-size:12px;margin-top:8px;text-align:right">颜色深浅 = 当天完成习惯占比</div>
+      </div>
       <div class="list" id="hbList" style="margin-top:12px"></div>
       <div class="empty" id="hbEmpty" hidden>还没有习惯，添加一个开始打卡吧</div>`;
 
@@ -26,6 +35,12 @@ App.registerTool({
     const nameInput = el.querySelector('#hbName');
     const listEl = el.querySelector('#hbList');
     const emptyEl = el.querySelector('#hbEmpty');
+    const heatTitleEl = el.querySelector('#hbHeatTitle');
+    const heatGridEl = el.querySelector('#hbHeatGrid');
+
+    /* 热力图当前查看的月份,默认当月 */
+    let heatY = new Date().getFullYear();
+    let heatM = new Date().getMonth() + 1;
 
     function fmt(d) {
       return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
@@ -97,6 +112,7 @@ App.registerTool({
       else h.records[today] = true;
       save();
       updateRow(h);
+      renderHeatmap();
     }
 
     /* 两击确认删除：首击变"确认删除？"，3 秒内再击执行，超时还原 */
@@ -105,6 +121,7 @@ App.registerTool({
         habits = habits.filter(function (x) { return x.id !== id; });
         save();
         renderAll();
+        renderHeatmap();
         return;
       }
       btn.dataset.armed = '1';
@@ -127,6 +144,7 @@ App.registerTool({
       iconInput.value = '';
       nameInput.value = '';
       renderAll();
+      renderHeatmap();
       nameInput.focus();
     }
 
@@ -142,6 +160,66 @@ App.registerTool({
       else if (btn.dataset.act === 'del') armDelete(btn, btn.dataset.id);
     });
 
+    /* ---------- 月度热力图 ---------- */
+    function pad2(x) { return String(x).padStart(2, '0'); }
+
+    /* 统计每天完成的习惯数(跨全部习惯) */
+    function heatCounts() {
+      const counts = {};
+      habits.forEach(function (h) {
+        const rec = h.records || {};
+        for (const d in rec) {
+          if (rec[d]) counts[d] = (counts[d] || 0) + 1;
+        }
+      });
+      return counts;
+    }
+
+    function renderHeatmap() {
+      heatTitleEl.textContent = heatY + '年' + heatM + '月';
+      const daysInMonth = new Date(heatY, heatM, 0).getDate();
+      const lead = (new Date(heatY, heatM - 1, 1).getDay() + 6) % 7; /* 周一为第一列 */
+      let html = ['一', '二', '三', '四', '五', '六', '日'].map(function (w) {
+        return '<div class="heat-cell heat-head">' + w + '</div>';
+      }).join('');
+      for (let i = 0; i < lead; i++) html += '<div></div>';
+      const counts = heatCounts();
+      const total = habits.length;
+      for (let d = 1; d <= daysInMonth; d++) {
+        const ds = heatY + '-' + pad2(heatM) + '-' + pad2(d);
+        const n = counts[ds] || 0;
+        let level = 0;
+        if (total > 0 && n > 0) {
+          const r = n / total;
+          level = r >= 1 ? 4 : r >= 0.67 ? 3 : r >= 0.34 ? 2 : 1;
+        }
+        html += '<button class="heat-cell l' + level + '" data-hd="' + ds + '" data-n="' + n + '">' + d + '</button>';
+      }
+      heatGridEl.innerHTML = html;
+    }
+
+    el.querySelector('#hbHeatPrev').addEventListener('click', function () {
+      heatM--;
+      if (heatM < 1) { heatM = 12; heatY--; }
+      renderHeatmap();
+    });
+    el.querySelector('#hbHeatNext').addEventListener('click', function () {
+      heatM++;
+      if (heatM > 12) { heatM = 1; heatY++; }
+      renderHeatmap();
+    });
+
+    heatGridEl.addEventListener('click', function (e) {
+      const cell = e.target.closest ? e.target.closest('button[data-hd]') : null;
+      if (!cell) return;
+      if (habits.length === 0) { App.toast('先添加习惯吧'); return; }
+      const ds = cell.dataset.hd;
+      const n = cell.dataset.n;
+      const md = ds.slice(5).replace('-', '月') + '日';
+      App.toast(md + ' 完成 ' + n + '/' + habits.length + ' 个习惯');
+    });
+
     renderAll();
+    renderHeatmap();
   },
 });
