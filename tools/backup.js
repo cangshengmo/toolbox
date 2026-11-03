@@ -80,6 +80,8 @@
         a.click();
         a.remove();
         setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+        App.store.appSet('lastExport', App.today());
+        App.store.appSet('backupDismiss', '');
         App.toast('已导出');
       });
 
@@ -108,6 +110,7 @@
             </div>`;
           twoClick(importBox.querySelector('[data-role="do-import"]'), '确认导入？', function () {
             App.store.importAll(obj.data);
+            App.store.appSet('lastExport', App.today());
             App.toast('导入成功');
             setTimeout(function () { location.reload(); }, 1000);
           });

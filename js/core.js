@@ -167,8 +167,36 @@ function renderHome(page) {
   const shown = pinSet.concat(rest);
   const cur = App.store.appGet('accent', '') || App.DEFAULT_ACCENT;
 
+  const hour = new Date().getHours();
+  const greet = hour < 5 ? '夜深了 🌙' : hour < 9 ? '早安 ☀️' : hour < 12 ? '上午好' : hour < 14 ? '午安 🌤' : hour < 18 ? '下午好' : hour < 23 ? '晚上好 🌆' : '夜深了 🌙';
+  const lastExport = App.store.appGet('lastExport', '');
+  const dismissed = App.store.appGet('backupDismiss', '');
+  let backupDays = null;
+  if (lastExport) {
+    backupDays = Math.round((Date.now() - new Date(lastExport.replace(/-/g, '/')).getTime()) / 86400000);
+  }
+  let hasData = false;
+  for (const k in localStorage) {
+    if (k.indexOf('bx:') === 0 && k.indexOf(':app:') === -1) { hasData = true; break; }
+  }
+  const overdue = hasData && backupDays === null || hasData && backupDays !== null && backupDays >= 30;
+  const showBanner = overdue && dismissed !== App.today();
+  const banner = showBanner
+    ? '<div class="card" id="bkBanner" style="border-color:#f59e0b">'
+      + '<div style="display:flex;align-items:center;gap:8px"><span>💾</span>'
+      + '<div class="grow" style="font-size:13.5px">' + (backupDays === null ? '还没有备份过数据' : '距上次备份已 ' + backupDays + ' 天') + ',建议导出一份</div>'
+      + '<a class="btn btn-primary" href="#/t/backup" style="min-height:36px;font-size:13px;flex:0 0 auto">去备份</a>'
+      + '<button class="icon-btn" id="bkDismiss" aria-label="今日不再提醒" style="min-width:36px;min-height:36px;font-size:13px">✕</button></div></div>'
+    : '';
+
   page.innerHTML = `
+    <div class="hero-greet" style="font-size:21px;font-weight:700;margin:4px 2px 0">${greet}</div>
     <div class="hero-date">${App.today()} · 共 ${App.tools.length} 个工具${pinSet.length ? ' · ★' + pinSet.length : ''}</div>
+    <div class="row" style="margin:8px 0 12px">
+      <input id="homeSearch" class="input grow" type="search" placeholder="搜工具或记录内容" aria-label="搜索">
+    </div>
+    <div id="searchResults" hidden></div>
+    ${banner}
     <div class="tool-grid" id="toolGrid">
       ${shown.map(function (t) {
         const isPinned = pinned.indexOf(t.id) !== -1;
@@ -270,6 +298,61 @@ function renderHome(page) {
     App.setAccent('');
     renderHome(page);
   });
+
+  /* ---------- 全局搜索:工具名/描述 + 各工具记录内容 ---------- */
+  const searchEl = page.querySelector('#homeSearch');
+  const resultsEl = page.querySelector('#searchResults');
+  const gridEl = page.querySelector('#toolGrid');
+
+  searchEl.addEventListener('input', function () {
+    const q = searchEl.value.trim().toLowerCase();
+    if (!q) {
+      resultsEl.hidden = true;
+      resultsEl.innerHTML = '';
+      gridEl.style.display = '';
+      return;
+    }
+    const seen = {};
+    const hits = [];
+    App.tools.forEach(function (t) {
+      if (t.name.toLowerCase().indexOf(q) !== -1 || String(t.desc || '').toLowerCase().indexOf(q) !== -1) {
+        seen[t.id] = true;
+        hits.push(t);
+      }
+    });
+    for (const key in localStorage) {
+      if (key.indexOf('bx:') !== 0 || key.indexOf(':app:') !== -1 || hits.length > 40) continue;
+      const toolId = key.slice(3, key.indexOf(':', 3));
+      if (seen[toolId]) continue;
+      let raw = null;
+      try { raw = localStorage.getItem(key); } catch (e) { continue; }
+      if (raw && raw.toLowerCase().indexOf(q) !== -1 && App.getTool(toolId)) {
+        seen[toolId] = true;
+        hits.push(App.getTool(toolId));
+      }
+    }
+    gridEl.style.display = 'none';
+    resultsEl.hidden = false;
+    resultsEl.innerHTML = hits.length
+      ? '<div class="card"><div class="item-title" style="margin-bottom:8px">找到 ' + hits.length + ' 个工具</div>'
+        + hits.map(function (t) {
+          return '<a class="item" href="#/t/' + App.esc(t.id) + '" style="text-decoration:none;color:inherit">'
+            + '<div class="tool-icon" style="font-size:24px;width:auto">' + ((App.icon && App.icon(t.icon)) || App.esc(t.icon)) + '</div>'
+            + '<div class="item-main"><div class="item-title">' + App.esc(t.name) + '</div>'
+            + '<div class="item-sub">' + App.esc(t.desc || '') + '</div></div></a>';
+        }).join('') + '</div>'
+      : '<div class="empty">没有匹配的工具或记录</div>';
+  });
+
+  /* 备份横幅:今日不再提醒 */
+  const bkDismiss = page.querySelector('#bkDismiss');
+  if (bkDismiss) {
+    bkDismiss.addEventListener('click', function () {
+      App.store.appSet('backupDismiss', App.today());
+      const b = page.querySelector('#bkBanner');
+      if (b) b.remove();
+    });
+  }
 }
 
 App.boot = function () {
