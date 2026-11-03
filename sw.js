@@ -2,7 +2,7 @@
    经典脚本（非 module）：预缓存全部资源，cache-first 离线策略。
    更新资源后请把 CACHE 版本号 +1，旧缓存会在 activate 阶段清除。 */
 
-const CACHE = 'bx-cache-v17';
+const CACHE = 'bx-cache-v18';
 
 const ASSETS = [
   './',
@@ -41,6 +41,7 @@ const ASSETS = [
   './tools/typing.js',
   './tools/sudoku.js',
   './tools/gomoku.js',
+  './tools/memory.js',
   './tools/notes.js',
   './tools/mood.js',
   './tools/words.js',
@@ -49,6 +50,9 @@ const ASSETS = [
   './tools/weight.js',
   './tools/aa.js',
   './tools/media.js',
+  './tools/wish.js',
+  './tools/express.js',
+  './tools/size.js',
   './tools/backup.js',
   './manifest.webmanifest',
   './icons/icon-192.png',
